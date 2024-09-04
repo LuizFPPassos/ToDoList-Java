@@ -1,6 +1,5 @@
 package br.unip.ads.too.todolist;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -12,86 +11,41 @@ import java.util.Comparator;
 import java.util.List;
 
 public class ListaDeTarefas {
-	
-	private List<Tarefa> listaDeTarefas;
-	private static final String NOME_ARQUIVO_JSON = "ListaDeTarefas.json"; // constante para nome do arquivo JSON
-	
-	// override do método toString para exibir a lista de tarefas ao usuário
-	@Override
-	public String toString() {
-		return "ListaDeTarefas [listaDeTarefas=" + listaDeTarefas + "]";
-	}
-	
-	// getter e setters
+
+    private List<Tarefa> listaDeTarefas;
+    private String titulo;
+    private static final String NOME_ARQUIVO_JSON_DEFAULT = "ListaDeTarefas";
+    private static final String NOME_ARQUIVO_CONFIG = "config.cfg";
+    private String nomeArquivoJson = "ListaDeTarefas";
+
+    // getters e setters
     public List<Tarefa> getListaDeTarefas() {
-		return listaDeTarefas;
-	}
-	public void setListaDeTarefas(List<Tarefa> listaDeTarefas) {
-		this.listaDeTarefas = listaDeTarefas;
-	}
-
-	// método para exportar a lista de tarefas para arquivo JSON definido em NOME_ARQUIVO_JSON
-	public void exportTarefasToJSON(List<Tarefa> listaDeTarefas) {
-	    ObjectMapper objectMapper = new ObjectMapper();
-	    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-	    objectMapper.registerModule(new JavaTimeModule());
-	    
-	    try {
-	        objectMapper.writeValue(new File(NOME_ARQUIVO_JSON), listaDeTarefas);
-	        System.out.println("Lista de tarefas exportada para JSON: " + NOME_ARQUIVO_JSON);
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	        System.out.println("Erro ao exportar lista de tarefas para JSON");
-	    }
-	}
-    
-	// método para ordenar a lista de tarefas pela data de realização da tarefa, e em caso de empate, pela data de criação
-	public void ordenarListaDeTarefas() {
-	    listaDeTarefas.sort(Comparator
-	        .comparing(Tarefa::getData)
-	        .thenComparing(Tarefa::getDataDeCriacao));
-	}
-    
-    // método para carregar a lista de tarefas a partir do arquivo JSON
-    public void carregarListaDeTarefas() {
-    	ObjectMapper objectMapper = new ObjectMapper();
-    	objectMapper.registerModule(new JavaTimeModule());
-    	
-        File file = new File(NOME_ARQUIVO_JSON);
-
-        // Verificar se o arquivo já existe
-        if (!file.exists()) {
-            try {
-            	System.out.println("Arquivo ListaDeTarefas.json não encontrado. Criando novo arquivo...");
-                
-                file.createNewFile(); // Cria um novo arquivo vazio
-
-                // Inicializa o arquivo JSON com uma lista vazia
-                try (FileWriter writer = new FileWriter(file)) {
-                    writer.write("[]");
-                    writer.flush();
-                }
-                System.out.println("Arquivo ListaDeTarefas.json criado com sucesso.");
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Erro ao criar arquivo ListaDeTarefas.json");
-                return;  // Sai do método se houver erro na criação do arquivo
-            }
-        }
-    	
-    	// carregar ListaDeTarefas.json e preencher listaDeTarefas
-        try {
-            listaDeTarefas = objectMapper.readValue(file, new TypeReference<List<Tarefa>>(){});
-            System.out.println("Lista de tarefas carregada com sucesso");
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Erro ao carregar lista de tarefas");
-        }
+        return listaDeTarefas;
     }
-    
-    // método para fazer o auto-increment do Id das tarefas
+
+    public void setListaDeTarefas(List<Tarefa> listaDeTarefas) {
+        this.listaDeTarefas = listaDeTarefas;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getNomeArquivoJson() {
+        return nomeArquivoJson;
+    }
+
+    public void setNomeArquivoJson(String nomeArquivoJson) {
+        this.nomeArquivoJson = nomeArquivoJson;
+    }
+
+    // método para obter o próximo Id disponível
     public int obterProximoId() {
-        int proximoId = 1; // Id inicial
+        int proximoId = 1;
         for (Tarefa tarefa : listaDeTarefas) {
             if (tarefa.getId() >= proximoId) {
                 proximoId = tarefa.getId() + 1;
@@ -99,5 +53,228 @@ public class ListaDeTarefas {
         }
         return proximoId;
     }
+
+    // método para excluir uma tarefa por Id
+    public void excluirTarefa(int id) {
+        listaDeTarefas.removeIf(tarefa -> tarefa.getId() == id);
+        System.out.println("Tarefa excluída com sucesso.");
+    }
+
+    // método para editar uma tarefa
+    public void editarTarefa(Tarefa tarefaEditar) {
+        for (Tarefa tarefa : listaDeTarefas) {
+            if (tarefa.getId() == tarefaEditar.getId()) {
+                tarefa.setTitulo(tarefaEditar.getTitulo());
+                tarefa.setDescricao(tarefaEditar.getDescricao());
+                tarefa.setData(tarefaEditar.getData());
+                System.out.println("Tarefa editada com sucesso.");
+                return;
+            }
+        }
+    }
+
+    // método para procurar uma tarefa por Id
+    public Tarefa procurarTarefa(int id) {
+        for (Tarefa tarefa : listaDeTarefas) {
+            if (tarefa.getId() == id) {
+                return tarefa;
+            }
+        }
+        return null;
+    }
+
+    // método para exportar a lista de tarefas para um arquivo JSON
+    public void exportTarefasToJSON() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.registerModule(new JavaTimeModule());
+
+        ListaDeTarefasComTitulo listaComTitulo = new ListaDeTarefasComTitulo(titulo, listaDeTarefas);
+
+        try {
+            objectMapper.writeValue(new File(nomeArquivoJson + ".json"), listaComTitulo);
+            System.out.println("Lista de tarefas salva em: " + nomeArquivoJson + ".json");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Erro ao exportar lista de tarefas para JSON");
+        }
+    }
+
+    // método para ordenar a lista de tarefas por data
+    public void ordenarListaDeTarefas() {
+        listaDeTarefas.sort(Comparator
+                .comparing(Tarefa::getData)
+                .thenComparing(Tarefa::getDataDeCriacao));
+    }
+
+    // método para carregar a lista de tarefas a partir de um arquivo JSON
+    public void carregarListaDeTarefas() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        File file = new File(nomeArquivoJson + ".json");
+
+        if (!file.exists()) {
+            try {
+                System.out.println("Arquivo " + nomeArquivoJson + ".json não encontrado. Criando novo arquivo...");
+
+                setTitulo("Minha Lista de Tarefas");
+
+                file.createNewFile();
+
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write("{ \"titulo\": \"Minha Lista de Tarefas\", \"listaDeTarefas\": [] }");
+                    writer.flush();
+                }
+                System.out.println("Arquivo " + nomeArquivoJson + ".json criado com sucesso.");
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Erro ao criar arquivo " + nomeArquivoJson + ".json");
+                return;
+            }
+        }
+
+        try {
+            ListaDeTarefasComTitulo listaComTitulo = objectMapper.readValue(file, ListaDeTarefasComTitulo.class);
+            this.listaDeTarefas = listaComTitulo.getListaDeTarefas();
+            this.titulo = listaComTitulo.getTitulo();
+            System.out.println("Lista de tarefas carregada com sucesso");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Erro ao carregar lista de tarefas");
+        }
+    }
+
+    // método para criar uma nova lista de tarefas em um arquivo JSON
+    public void criarNovaListaDeTarefas() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        File file = new File(nomeArquivoJson + ".json");
+
+        try {
+            file.createNewFile();
+
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write("{ \"titulo\": \"" + titulo + "\", \"listaDeTarefas\": [] }");
+                writer.flush();
+            }
+            System.out.println("Arquivo " + nomeArquivoJson + ".json criado com sucesso.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Erro ao criar arquivo " + nomeArquivoJson + ".json");
+            return;
+        }
+
+        try {
+            ListaDeTarefasComTitulo listaComTitulo = objectMapper.readValue(file, ListaDeTarefasComTitulo.class);
+            this.listaDeTarefas = listaComTitulo.getListaDeTarefas();
+            this.titulo = listaComTitulo.getTitulo();
+            System.out.println("Lista de tarefas carregada com sucesso");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Erro ao carregar lista de tarefas");
+        }
+    }
+
+    // método para atualizar a lista de tarefas (ordenar e exportar)
+    public void atualizarListaDeTarefas() {
+        ordenarListaDeTarefas();
+        exportTarefasToJSON();
+    }
+
+    // método para obter a última lista de tarefas utilizada
+    public void obterUltimaListaDeTarefas() {
+        File file = new File(NOME_ARQUIVO_CONFIG);
+
+        if (file.exists()) {
+            try {
+                List<String> linhas = java.nio.file.Files.readAllLines(file.toPath());
+
+                for (String linha : linhas) {
+                    if (linha.startsWith("ultimaListaUtilizada=")) {
+                        String nomeArquivo = linha.split("=")[1].trim();
+                        System.out.println("Arquivo de configuração carregado com sucesso");
+
+                        if (verificarArquivoJsonExiste(nomeArquivo)) {
+                            System.out.println("Arquivo " + nomeArquivoJson + ".json" + " encontrado.");
+                            setNomeArquivoJson(nomeArquivo);
+                        } else {
+                            System.out.println("Arquivo " + nomeArquivoJson + ".json" + " não encontrado.");
+                            resetarNomeArquivoJson();
+                        }
+
+                        System.out.println("Utilizando arquivo " + nomeArquivoJson + ".json" + " para salvar a lista de tarefas.");
+                        return;
+                    }
+                }
+                System.out.println("Chave 'ultimaListaUtilizada' não encontrada no arquivo de configuração.");
+                resetarNomeArquivoJson();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Erro ao carregar arquivo de configuração");
+                resetarNomeArquivoJson();
+            }
+        } else {
+            System.out.println("Arquivo de configuração não encontrado.");
+            resetarNomeArquivoJson();
+        }
+    }
+
+    // método para salvar a última lista de tarefas utilizada em um arquivo de configuração
+    public void salvarUltimaListaDeTarefas() {
+        File file = new File(NOME_ARQUIVO_CONFIG);
+
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write("ultimaListaUtilizada=" + nomeArquivoJson + "\n");
+            writer.flush();
+            System.out.println("Arquivo de configuração salvo com sucesso");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Erro ao salvar arquivo de configuração");
+        }
+    }
+
+    // método para verificar se um arquivo JSON existe
+    public boolean verificarArquivoJsonExiste(String nomeArquivoJson) {
+        File file = new File(nomeArquivoJson + ".json");
+        return file.exists();
+    }
+
+    // método para resetar o nome do arquivo JSON para o padrão
+    public void resetarNomeArquivoJson() {
+        System.out.println("Utilizando arquivo padrão " + NOME_ARQUIVO_JSON_DEFAULT + ".");
+        nomeArquivoJson = NOME_ARQUIVO_JSON_DEFAULT;
+        salvarUltimaListaDeTarefas();
+    }
     
+}
+
+// Classe para encapsular o título e a lista de tarefas
+class ListaDeTarefasComTitulo {
+
+    private String titulo;
+    private List<Tarefa> listaDeTarefas;
+
+    public ListaDeTarefasComTitulo() { }
+
+    public ListaDeTarefasComTitulo(String titulo, List<Tarefa> listaDeTarefas) {
+        this.titulo = titulo;
+        this.listaDeTarefas = listaDeTarefas;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public List<Tarefa> getListaDeTarefas() {
+        return listaDeTarefas;
+    }
+
+    public void setListaDeTarefas(List<Tarefa> listaDeTarefas) {
+        this.listaDeTarefas = listaDeTarefas;
+    }
 }

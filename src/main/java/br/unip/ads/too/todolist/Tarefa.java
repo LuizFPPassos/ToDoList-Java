@@ -11,6 +11,7 @@ public class Tarefa {
     private String descricao;
     private LocalDateTime dataDeCriacao;
     private LocalDateTime data;
+    private boolean atrasada;
     
     // override do método toString para exibir informações da tarefa ao usuário
     @Override
@@ -20,7 +21,8 @@ public class Tarefa {
         		"\nDescrição: " + descricao + 
         		"\nData: " + dataToString() + 
         		"\nData de Criação: " + dataDeCriacaoToString() + 
-        		"\nCompleta: " + completa + "\n";
+        		"\nCompleta: " + completa +
+        		"\nAtrasada: " + atrasada + "\n";
     }
     
     // método para converter a data para formato mais amigável para exibir ao usuário
@@ -36,9 +38,7 @@ public class Tarefa {
 	}
 
     // construtor padrão
-	public Tarefa(){
-        completa = false;
-    }
+	public Tarefa(){ }
 	
 	// construtor com parâmetros
 	public Tarefa(int id, String titulo, String descricao, LocalDateTime data, LocalDateTime dataDeCriacao, boolean completa) {
@@ -49,6 +49,7 @@ public class Tarefa {
 		this.data = data;
 		this.dataDeCriacao = dataDeCriacao;
 		this.completa = completa;
+		verificarAtraso();
 	}
 	
 	// getter e setters
@@ -58,17 +59,28 @@ public class Tarefa {
 	public void setId(int id) {
 		this.id = id;
 	}
-	
-    public void toggleCompleta(){
+
+    public boolean isCompleta() { // método get
+        return completa;
+    }
+    public void toggleCompleta(){ // método set que alterna os valores
         if(this.completa == false){
             this.completa = true;
         }else{
             this.completa = false;
         }
     }
-    public boolean isCompleta() {
-        return completa;
-    }
+	
+	public boolean isAtrasada() { // método get
+		return atrasada;
+	}
+	public void verificarAtraso() { // método set que verifica se a tarefa está atrasada
+		if (LocalDateTime.now().isAfter(data)) {
+			this.atrasada = true;
+		} else {
+			this.atrasada = false;
+		}
+	}
     
     public String getTitulo() {
         return titulo;
@@ -96,6 +108,7 @@ public class Tarefa {
     }
     public void setData(LocalDateTime data) {
         this.data = data;
+        verificarAtraso();
     }
     
     // método para converter a data de string para o formato correto de LocalDateTime
@@ -106,7 +119,8 @@ public class Tarefa {
         try {
             dataFormatada = LocalDateTime.parse(data, formatter);
         } catch (DateTimeParseException e) {
-            System.out.println("Erro ao formatar a data: " + e.getMessage());
+            System.err.println("Erro ao formatar a data: " + e.getMessage());
+            System.out.println("Erro ao formatar a data.");
             System.out.println("Formato esperado: dd/MM/yyyy HH:mm");
         }
         return dataFormatada;
