@@ -269,7 +269,8 @@ public class ToDoList {
 		}
 		
 		listaDeTarefasObj.ordenarListaDeTarefas(); // ordena a lista de tarefas por data de realização
-    	// converter listaDeTarefasObj.getListaDeTarefas() para String
+    	
+		// converter listaDeTarefasObj.getListaDeTarefas() para String
     	listaDeTarefasString = new ArrayList<String>();
     	for(Tarefa t: listaDeTarefasObj.getListaDeTarefas()){
     		listaDeTarefasString.add(t.toString());

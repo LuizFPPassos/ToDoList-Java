@@ -22,7 +22,6 @@ public class ListaDeTarefas {
     public List<Tarefa> getListaDeTarefas() {
         return listaDeTarefas;
     }
-
     public void setListaDeTarefas(List<Tarefa> listaDeTarefas) {
         this.listaDeTarefas = listaDeTarefas;
     }
@@ -30,7 +29,6 @@ public class ListaDeTarefas {
     public String getTitulo() {
         return titulo;
     }
-
     public void setTitulo(String titulo) {
         this.titulo = titulo;
     }
@@ -38,7 +36,6 @@ public class ListaDeTarefas {
     public String getNomeArquivoJson() {
         return nomeArquivoJson;
     }
-
     public void setNomeArquivoJson(String nomeArquivoJson) {
         this.nomeArquivoJson = nomeArquivoJson;
     }
@@ -86,7 +83,7 @@ public class ListaDeTarefas {
     // método para exportar a lista de tarefas para um arquivo JSON
     public void exportTarefasToJSON() {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // ativa formatação com indentação para legibilidade
         objectMapper.registerModule(new JavaTimeModule());
 
         ListaDeTarefasComTitulo listaComTitulo = new ListaDeTarefasComTitulo(titulo, listaDeTarefas);
@@ -103,8 +100,8 @@ public class ListaDeTarefas {
     // método para ordenar a lista de tarefas por data
     public void ordenarListaDeTarefas() {
         listaDeTarefas.sort(Comparator
-                .comparing(Tarefa::getData)
-                .thenComparing(Tarefa::getDataDeCriacao));
+            .comparing(Tarefa::getData) // primariamente por data
+            .thenComparing(Tarefa::getDataDeCriacao)); // desempate por data de criação
     }
 
     // método para carregar a lista de tarefas a partir de um arquivo JSON
@@ -117,12 +114,12 @@ public class ListaDeTarefas {
             try {
                 System.out.println("Arquivo " + nomeArquivoJson + ".json não encontrado. Criando novo arquivo...");
 
-                setTitulo("Minha Lista de Tarefas");
+                setTitulo("Minha Lista de Tarefas"); // título padrão
 
                 file.createNewFile();
 
                 try (FileWriter writer = new FileWriter(file)) {
-                    writer.write("{ \"titulo\": \"Minha Lista de Tarefas\", \"listaDeTarefas\": [] }");
+                    writer.write("{ \"titulo\": \"" + getTitulo() + "\", \"listaDeTarefas\": [] }");
                     writer.flush();
                 }
                 System.out.println("Arquivo " + nomeArquivoJson + ".json criado com sucesso.");
@@ -154,7 +151,7 @@ public class ListaDeTarefas {
             file.createNewFile();
 
             try (FileWriter writer = new FileWriter(file)) {
-                writer.write("{ \"titulo\": \"" + titulo + "\", \"listaDeTarefas\": [] }");
+                writer.write("{ \"titulo\": \"" + getTitulo() + "\", \"listaDeTarefas\": [] }");
                 writer.flush();
             }
             System.out.println("Arquivo " + nomeArquivoJson + ".json criado com sucesso.");
@@ -190,7 +187,7 @@ public class ListaDeTarefas {
                 List<String> linhas = java.nio.file.Files.readAllLines(file.toPath());
 
                 for (String linha : linhas) {
-                    if (linha.startsWith("ultimaListaUtilizada=")) {
+                    if (linha.startsWith("ultimaListaUtilizada=")) { // chave que define o nome do ultimo arquivo JSON utilizado
                         String nomeArquivo = linha.split("=")[1].trim();
                         System.out.println("Arquivo de configuração carregado com sucesso");
 
@@ -244,17 +241,18 @@ public class ListaDeTarefas {
     public void resetarNomeArquivoJson() {
         System.out.println("Utilizando arquivo padrão " + NOME_ARQUIVO_JSON_DEFAULT + ".");
         nomeArquivoJson = NOME_ARQUIVO_JSON_DEFAULT;
-        salvarUltimaListaDeTarefas();
+        salvarUltimaListaDeTarefas(); // salvar o arquivo de configuração
     }
     
 }
 
-// Classe para encapsular o título e a lista de tarefas
+// classe para encapsular o título e a lista de tarefas
 class ListaDeTarefasComTitulo {
 
     private String titulo;
     private List<Tarefa> listaDeTarefas;
 
+    // construtores
     public ListaDeTarefasComTitulo() { }
 
     public ListaDeTarefasComTitulo(String titulo, List<Tarefa> listaDeTarefas) {
@@ -262,10 +260,10 @@ class ListaDeTarefasComTitulo {
         this.listaDeTarefas = listaDeTarefas;
     }
 
+    // getters e setters
     public String getTitulo() {
         return titulo;
     }
-
     public void setTitulo(String titulo) {
         this.titulo = titulo;
     }
@@ -273,7 +271,6 @@ class ListaDeTarefasComTitulo {
     public List<Tarefa> getListaDeTarefas() {
         return listaDeTarefas;
     }
-
     public void setListaDeTarefas(List<Tarefa> listaDeTarefas) {
         this.listaDeTarefas = listaDeTarefas;
     }
